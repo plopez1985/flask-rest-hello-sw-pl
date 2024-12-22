@@ -26,6 +26,11 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
+users_favorites = {
+    1: {"planets": [], "vehicles": [], "characters": []},
+    2: {"planets": [], "vehicles": [], "characters": []},
+}
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -98,13 +103,92 @@ def get_user_favorites(user_id):
     
     return jsonify(result), 200
 
-@app.route('/favorite/planet/<int:id>', methods=['POST'])
-def get_one_planet(id):
-    one_planet = Planet.query.get(id)
-    if one_planet is None: 
-        return "Planeta no encontrado", 400
-    result = one_planet.serialize() 
-    return jsonify(result), 200
+# @app.route('/favorite/planet/<int:id>', methods=['POST'])
+# def get_one_planet(id):
+#     one_planet = Planet.query.get(id)
+#     if one_planet is None: 
+#         return "Planeta no encontrado", 400
+#     result = one_planet.serialize() 
+#     return jsonify(result), 200
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+def add_favorite_planet(planet_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if planet_id in users_favorites[user_id]["planets"]:
+        return jsonify({"message": "El planeta ya está en los favoritos"}), 400
+
+    users_favorites[user_id]["planets"].append(planet_id)
+    return jsonify({"message": f"Planeta {planet_id} agregado a los favoritos"}), 200
+
+@app.route('/favorite/vehicle/<int:vehicle_id>', methods=['POST'])
+def add_favorite_vehicle(vehicle_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if vehicle_id in users_favorites[user_id]["vehicles"]:
+        return jsonify({"message": "El vehiculo ya está en los favoritos"}), 400
+
+    users_favorites[user_id]["vehicles"].append(vehicle_id)
+    return jsonify({"message": f"Vehiculo {vehicle_id} agregado a los favoritos"}), 200
+
+@app.route('/favorite/character/<int:character_id>', methods=['POST'])
+def add_favorite_character(character_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if character_id in users_favorites[user_id]["characters"]:
+        return jsonify({"message": "El Personaje ya está en los favoritos"}), 400
+
+    users_favorites[user_id]["characters"].append(character_id)
+    return jsonify({"message": f"Personaje {character_id} agregado a los favoritos"}), 200
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(planet_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if planet_id not in users_favorites[user_id]["planets"]:
+        return jsonify({"message": "El planeta no esta en los favoritos"}), 400
+
+    users_favorites[user_id]["planets"].remove(planet_id)
+    return jsonify({"message": f"Planeta {planet_id} eliminado de los favoritos"}), 200
+
+@app.route('/favorite/vehicle/<int:vehicle_id>', methods=['DELETE'])
+def delete_favorite_vehicle(vehicle_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if vehicle_id not in users_favorites[user_id]["vehicles"]:
+        return jsonify({"message": "El vehiculo no esta en los favoritos"}), 400
+
+    users_favorites[user_id]["vehicles"].remove(vehicle_id)
+    return jsonify({"message": f"Vehiculo {vehicle_id} eliminado de los favoritos"}), 200
+
+@app.route('/favorite/character/<int:character_id>', methods=['DELETE'])
+def delete_favorite_character(character_id):
+    user_id = request.json.get('user_id')
+
+    if user_id not in users_favorites:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    if character_id not in users_favorites[user_id]["characters"]:
+        return jsonify({"message": "El personaje no esta en los favoritos"}), 400
+
+    users_favorites[user_id]["characters"].remove(character_id)
+    return jsonify({"message": f"Personaje {character_id} eliminado de los favoritos"}), 200
+
 
 # @app.route('/users/favorites', methods=['GET'])
 # def get_all_favorites():
